@@ -1,7 +1,3 @@
-
-
-# Learn Rust part 1
-
 ## Introduction
 
 I have been a professional developer for almost 20 years, and like many professional developers I have used many programming languages in my career (C, C++, Fortran, Java, Scala, JavaScript, TypeScript, Python, Go, etc.).
