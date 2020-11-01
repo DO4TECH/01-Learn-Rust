@@ -5,7 +5,9 @@
 ## Introduction
 
 I have been a professional developer for almost 20 years, and like many professional developers I have used many programming languages in my career (C, C++, Fortran, Java, Scala, Javascript, TypeScript, Python, Go, etc.).
+
 It's been a while now that I've been wanting to learn Rust and write an article on Medium so I decide to do both at the same time.
+
 Although it is not my mother tongue, I will write my articles in English. Maybe there will be some mistakes or some weird turns of phrase, please be kind but do not hesitate to correct me, I'm only asking for improvement :).
 
 In this first article I describe how to create a complete Rust development environment, usable from a browser and contained in a docker image. We will also write our first program and learn how to use the debugger.
@@ -108,7 +110,7 @@ RUN adduser --gecos '/usr/bin/bash' --disabled-password rustdev && \
 ENV SHELL bash
 ```
 
-The next section set the user to be *rustdev*, the working directory to be */home/rustdev*, the home directory of *rustdev* user. The USER environment variable is defined to be able to use Cargo later. If you do not define the USER environment variable running *cargo new ...* int the container will raise the error: *"could not determine the current user, please set $USER"*
+The next section set the user to be *rustdev*, the working directory to be */home/rustdev*, the home directory of *rustdev* user. The USER environment variable is defined to be able to use Cargo later. If you do not define the USER environment variable, running *cargo new ...*, in the container will raise the error: *"could not determine the current user, please set $USER"*
 
 ```dockerfile
 USER rustdev
@@ -126,7 +128,7 @@ RUN sh rustup.sh -y && rm -f rustup.sh
 ENV PATH /home/rustdev/.cargo/bin:$PATH
 ```
 
-There is a bit more to say about the installation of *code-server*. Installing it requires you to be *sudoer* because the install script install a deb package. I use standalone method to install *code-server* because it install it in *~/.local* directory which allows installing extensions as *rustdev* user. After installation, The *~/.local* directory is owned by root user that is why the *chown* command change the ownership to be *rustdev*. To finish */home/rustdev/.local/bin* is added to the PATH as it contains the *code-server* executable. 
+There is a bit more to say about the installation of *code-server*. Installing it requires you to be *sudoer* because the install script installs a deb package. I use *standalone* method to install *code-server* because it puts it in the *~/.local* directory which allows rustdev* user to install extension without sudo. After installation is completed, The *~/.local* directory is owned by root user that is why I use the *chown* command change the ownership to be *rustdev*. To finish */home/rustdev/.local/bin* is added to the PATH as it contains the *code-server* executable. 
 
 ```dockerfile
 # Install code-server 
@@ -137,7 +139,7 @@ RUN sudo chown -R rustdev:rustdev /home/rustdev/.local
 ENV PATH /home/rustdev/.local/bin:$PATH
 ```
 
-Now that *code-server* is installed its time to install some extensions to make *code-server* user-friendly with Rust developers. I use *rustup* to install Rust toolchain components that are necessary for the extension I want. If you don't install these components now, this will be done each time you restart the container which is not the behavior I wanted. 
+Now that *code-server* is installed its time to add some extensions to make *code-server* user-friendly with Rust developers. I use *rustup* to install Rust toolchain components that are necessary for the extension I want. If you don't install these components now, this will be done each time you restart the container which is not the behavior I wanted.
 
 ```dockerfile
 # Install code-server extensions
@@ -147,7 +149,7 @@ RUN rustup component add rust-src --toolchain stable-x86_64-unknown-linux-gnu
 RUN rustup component add rls --toolchain stable-x86_64-unknown-linux-gnu
 ```
 
-After reading a [post](https://dev.to/thiagomg/developing-in-rust-using-visual-studio-code-4kkl) by Thiago Massari Guedes I decided to trust him and to install [rust](https://marketplace.visualstudio.com/items?itemName=rust-lang.rust), [rust-analyzer](https://marketplace.visualstudio.com/items?itemName=matklad.rust-analyzer) and [vscode-lldb](https://marketplace.visualstudio.com/items?itemName=vadimcn.vscode-lldb) extensions even if *rust-analyzer* is in alpha version and that the documentation of rust-analyzer says that it may cause conflicts with the [official Rust plugin](https://marketplace.visualstudio.com/items?itemName=rust-lang.rust). We will see in use if Thiago's recommendations were good, I will make a feedback in the next posts as I progress in the discovery of Rust.
+After reading a [post](https://dev.to/thiagomg/developing-in-rust-using-visual-studio-code-4kkl) by Thiago Massari Guedes I decided to trust him and to add [rust](https://marketplace.visualstudio.com/items?itemName=rust-lang.rust), [rust-analyzer](https://marketplace.visualstudio.com/items?itemName=matklad.rust-analyzer) and [vscode-lldb](https://marketplace.visualstudio.com/items?itemName=vadimcn.vscode-lldb) extensions even if *rust-analyzer* is in alpha version and that the documentation of *rust-analyzer* says that it may cause conflicts with the [official Rust plugin](https://marketplace.visualstudio.com/items?itemName=rust-lang.rust). We will see in use if Thiago's recommendations were good, I will make a feedback in the next posts as I progress in the discovery of Rust.
 
 Rust extension is straightforward to install using *code-server* command line tool, *rust-analyzer* and *vscode-lldb* were more problematic.
 
@@ -156,9 +158,9 @@ Rust extension is straightforward to install using *code-server* command line to
 RUN code-server --install-extension rust-lang.rust
 ```
 
-My first attempt to install *rust-analyzer* was to simply run *code-server --install-extension matklad.rust-analyzer*. The problem is that it just installs the extension without downloading the *rust-analyzer* used by extension. As a consequence the executable is downloaded it each time the container is run when you try to use the extension. To prevent this behavior the *rust-analyzer* executable can be downloaded directly from github and put it where the extension expect to find it. 
+My first attempt to install *rust-analyzer* was to simply run *code-server --install-extension matklad.rust-analyzer*. The problem was it just installs the extension without downloading the *rust-analyzer* binary required by extension. As a consequence, the executable is downloaded each time the container is run, when you try to use the extension for the first time. To prevent this behavior the *rust-analyzer* executable can be downloaded directly from github and put it in the *code-server* global storage where the extension expect to find it. 
 
-Unfortunately, even taking these precautions, when you run the container and activate the extension by opening a first Rust project, the *rust-analyzer* extension ask for downloading the *rust-analyzer* binary. I have inspected the code of the *rust-analyzer* extension to understand the problem, if you are interested I created an [issue](https://github.com/rust-analyzer/rust-analyzer/issues/6428) in github.
+Unfortunately, even taking these precautions, when the container is run and the extension is activated by opening a first Rust project, the *rust-analyzer* extension ask for downloading the *rust-analyzer* binary. I have inspected the code of the *rust-analyzer* extension to understand the problem, if you are interested I created an [issue](https://github.com/rust-analyzer/rust-analyzer/issues/6428) in github.
 
 A fix could be to modify the *package.json* of the extension by removing the version, but it is very dirty so I prefer keep the Dockerfile as these and wait the *rust-analyzer* team solves the problem as it is non blocking.
 
@@ -171,7 +173,7 @@ RUN curl -L https://github.com/rust-analyzer/rust-analyzer/releases/latest/downl
 RUN chmod u+x /home/rustdev/.local/share/code-server/User/globalStorage/matklad.rust-analyzer/rust-analyzer-linux
 ```
 
-For *vscode-lldb* extension I have also tried to install it the same way I have installed *rust* and *rust-analyzer* extensions but I encounter problems trying to use it. After some research I find the *vscode-lldb* [issue 314](https://github.com/vadimcn/vscode-lldb/issues/314) so I tried the fix proposed. The fix consist in downloading manually from github the *vsix* extension file and install it from the command line, it works perfectly.
+For *vscode-lldb* extension I have also tried to install it the same way I have installed *rust* and *rust-analyzer* extensions but I encounter problems trying to use it. After some research I find the *vscode-lldb* [issue 314](https://github.com/vadimcn/vscode-lldb/issues/314) so I tried the fix proposed. The fix consists in downloading manually from github the *vsix* extension file and adding using the *code-server* command line, it works perfectly.
 
 ```dockerfile
 ## Debugging tools
@@ -181,14 +183,14 @@ RUN code-server --install-extension codelldb-x86_64-linux.vsix
 RUN rm -f codelldb-x86_64-linux.vsix
 ```
 
-After that I ended by installing the [better-toml](https://marketplace.visualstudio.com/items?itemName=bungcip.better-toml) extension useful to edit Cargo toml configuration files.
+After that, I ended by installing the [better-toml](https://marketplace.visualstudio.com/items?itemName=bungcip.better-toml) extension useful to edit Cargo toml configuration files.
 
 ```dockerfile
 ## Toml extension, usefull to edit cargo configuration files
 RUN code-server --install-extension bungcip.better-toml
 ```
 
-Now everything is installed correctly it is time to remove the *sudo* package that is no more necessary. This can be done only as root user. Once *sudo* is removed the user can be set again to rustdev.
+Now everything is installed it is time to remove the *sudo* package that is no more necessary. This can be done only as root user. Once *sudo* package is removed the user can be set again to rustdev to run code-server.
 
 ```dockerfile
 # Remove sudo package
@@ -198,7 +200,7 @@ RUN apt -y remove sudo
 USER rustdev
 ```
 
-To run *code-server* we need to overload the binding address and port is a way that the web UI can be access from the host and because this container is used for testing purpose we can also by-pass authentication mechanism.
+To run *code-server* we need to overload the binding address and port to be able to access the web UI from the host. Because this container will be used locally, for testing purpose we can also by-pass authentication mechanism.
 
 ```dockerfile
 # Command to run code-server
@@ -224,7 +226,7 @@ This is how my working repository is organized:
 ├── projects
 ```
 
-- The file *docker-compose.yaml* is a docker compose file that defines how to build and run our image. 
+- The file *docker-compose.yaml* is a docker compose file that defines how to build and run the image. 
 - The directory *docker-image* contains the Dockerfile.
 - The directory projects is an empty repository.
 
@@ -287,14 +289,14 @@ To allow LLDB working correctly inside the container the *seccomp* security prof
       - seccomp:unconfined
 ```
 
-The host directory *./projects* is mount into the container */home/rustdev/projects* directory.
+The host directory *./projects* is mounted into the container */home/rustdev/projects* directory.
 
 ```yaml
     volumes:
       - ./projects:/home/rustdev/projects
 ```
 
-Now running *rustcoder* service is simply running 
+Now the *rustcoder* service can be run using 
 
 ```bash
 docker-compose up
@@ -302,7 +304,7 @@ docker-compose up
 
 in the directory where the *docker-compose.yaml* file is saved.
 
-Once done you can access your brand new Rust development environment to *http://localhost:8080*
+Once done, the Rust development environment is accessible from *http://localhost:8080*
 
 ![](imgs/code-server.png)
 
@@ -312,26 +314,30 @@ To create a project with Cargo we need first to open a Terminal inside *code-ser
 
 ![](imgs/open-terminal.png)
 
-Once the Terminal is opened go to project directory and run
+Once the Terminal is opened go to *projects* directory and run
 
 ```bash
 cargo new hello_world
 ```
 
-Than click on *Open Folder* in the welcome screen or from the menu click *File > Open Folder* and then select */home/rustdev/projects/hello_world*. Due to the "bug" explained before the *rust-analyzer* extension should ask you for downloading the *rust-analyzer* binary.
+Than click on *Open Folder* in the welcome screen or from the menu click *File > Open Folder* and then select */home/rustdev/projects/hello_world*. 
 
-Once done open the */home/rustdev/projects/hello_world/main.rs* file. Now you can run your first Rust application by simply clicking *Run* above the *main* function definition.
+Due to the "bug" explained before the *rust-analyzer* extension should ask you for downloading the *rust-analyzer* binary.
+
+Once done, open the */home/rustdev/projects/hello_world/main.rs* file. Now you can run your first Rust program by simply clicking *Run* above the *main* function definition.
 
 ![](imgs/main_rs.png)
 
 ## Debug your program with code-server
 
-To illustrate how debugging work we will modify a little bit the *main* function by creating a *greetings* variable and putting a breakpoint. ![](imgs/breakpoint.png)
+To illustrate how debugging work we will modify a little bit the *main* function by creating a *greetings* variable and putting a breakpoint by clicking in the margin.![](imgs/breakpoint.png)
 
-To start the debugging session click on *Debug*, code-server automatically open the debug panel and the execution is stopped to the breakpoint. You can now click on the step over icon that appears in overlay.
+To start the debugging session click on *Debug*, *code-server* automatically opens the debug panel and the execution is stopped to the breakpoint. You can now click on the step over icon that appears in overlay.
 
 ![](imgs/step_over.png)
 
 ## Conclusion
 
-We have now a complete Rust development environment and we are ready to start learning Rust :). 
+We have now a complete Rust development environment and we are ready to start learning Rust :).
+
+The code developed to create the post is available on [github](https://github.com/DO4TECH/01-Learn-Rust) under CC0-1.0 License
