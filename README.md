@@ -1,3 +1,5 @@
+
+
 # Learn Rust part 1
 
 ## Introduction
@@ -302,13 +304,13 @@ in the directory where the *docker-compose.yaml* file is saved.
 
 Once done you can access your brand new Rust development environment to *http://localhost:8080*
 
-![](/home/sebastien/projects/OTHER/medium/learn-rust/01-learn-rust/imgs/code-server.png)
+![](imgs/code-server.png)
 
 ## Create a project with Cargo
 
 To create a project with Cargo we need first to open a Terminal inside *code-server*
 
-![](/home/sebastien/projects/OTHER/medium/learn-rust/01-learn-rust/imgs/open-terminal.png)
+![](imgs/open-terminal.png)
 
 Once the Terminal is opened go to project directory and run
 
@@ -320,15 +322,15 @@ Than click on *Open Folder* in the welcome screen or from the menu click *File >
 
 Once done open the */home/rustdev/projects/hello_world/main.rs* file. Now you can run your first Rust application by simply clicking *Run* above the *main* function definition.
 
-![](/home/sebastien/projects/OTHER/medium/learn-rust/01-learn-rust/imgs/main_rs.png)
+![](imgs/main_rs.png)
 
 ## Debug your program with code-server
 
-To illustrate how debugging work we will modify a little bit the *main* function by creating a *greetings* variable and putting a breakpoint. ![](/home/sebastien/projects/OTHER/medium/learn-rust/01-learn-rust/imgs/breakpoint.png)
+To illustrate how debugging work we will modify a little bit the *main* function by creating a *greetings* variable and putting a breakpoint. ![](imgs/breakpoint.png)
 
 To start the debugging session click on *Debug*, code-server automatically open the debug panel and the execution is stopped to the breakpoint. You can now click on the step over icon that appears in overlay.
 
-![](/home/sebastien/projects/OTHER/medium/learn-rust/01-learn-rust/imgs/step_over.png)
+![](imgs/step_over.png)
 
 ## Conclusion
 
