@@ -1,1 +1,10 @@
+title: Learning Rust - Part 1
+author: Sébastien Dorgan
+email: sebastien.dorgan@gmail.com
+description: Building a portable Rust development environment with code-server and docker 
+url: "https://do4tech.github.io/" 
+
+# Build settings
 remote_theme: huangyz0918/moving
+plugins:
+  - jekyll-feed
