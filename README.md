@@ -4,13 +4,15 @@
 
 ## Introduction
 
-I have been a professional developer for almost 20 years, and like many professional developers I have used many programming languages in my career (C, C++, Fortran, Java, Scala, Javascript, TypeScript, Python, Go, etc.).
+I have been a professional developer for almost 20 years, and like many professional developers I have used many programming languages in my career (C, C++, Fortran, Java, Scala, JavaScript, TypeScript, Python, Go, etc.).
 
 It's been a while now that I've been wanting to learn Rust and write an article on Medium so I decide to do both at the same time.
 
-Although it is not my mother tongue, I will write my articles in English. Maybe there will be some mistakes or some weird turns of phrase, please be kind but do not hesitate to correct me, I'm only asking for improvement :).
+Although it is not my mother tongue, I will write my articles in English. Maybe there will be some mistakes or some weird turns of phrase, please be kind to me but do not hesitate to correct me, I'm only asking for improvement :).
 
 In this first article I describe how to create a complete Rust development environment, usable from a browser and contained in a docker image. We will also write our first program and learn how to use the debugger.
+
+For those who are very impatient, the link to the github repository is given in the conclusion.
 
 
 ## Create a portable development environment
@@ -100,7 +102,7 @@ FROM ubuntu:20.04
 RUN apt update -y && apt upgrade -y && \
     apt install -y curl git sudo build-essential lldb
 ```
-As it is a bad practice to create root containers I create a user named *rustdev*. The default SHELL for this user is BASH, the home directory is  */home/rustdev* , the password is disabled. To be able to install *code-server* it is also needed to add *rustdev* to the sudoer list to allow rustdev to use sudo without password. To be perfectly honest, giving to a user the possibility to run sudo without password is also not a very good practice. This will be fix later by removing the package sudo. The SHELL environment variable is also set to make *bash* the default shell.
+As it is a bad practice to create root containers I create a user named *rustdev*. The default SHELL for this user is *bash*, the home directory is  */home/rustdev* , the password is disabled. To be able to install *code-server*, it is also needed to add *rustdev* to the sudoer list to allow rustdev to use *sudo* without password. To be perfectly honest, giving to a user the possibility to run sudo without password is also not a very good practice. This will be fix later by removing the package sudo. The SHELL environment variable is also set to make *bash* the default shell.
 
 ```dockerfile
 # Add a user `rustdev` so that you're not developing as the `root` user
@@ -110,7 +112,7 @@ RUN adduser --gecos '/usr/bin/bash' --disabled-password rustdev && \
 ENV SHELL bash
 ```
 
-The next section set the user to be *rustdev*, the working directory to be */home/rustdev*, the home directory of *rustdev* user. The USER environment variable is defined to be able to use Cargo later. If you do not define the USER environment variable, running *cargo new ...*, in the container will raise the error: *"could not determine the current user, please set $USER"*
+The next section set the user to be *rustdev*, the working directory to be */home/rustdev*, the home directory of *rustdev* user. The USER environment variable is defined to be able to use Cargo later. If  the USER environment variable is not define, when running *cargo new ...* command in the container, an error is raised: *"could not determine the current user, please set $USER"*
 
 ```dockerfile
 USER rustdev
@@ -119,7 +121,7 @@ WORKDIR /home/rustdev
 ENV USER rustdev
 ```
 
-Now its time to install [*rustup*](https://rust-lang.github.io/rustup/) the Rust toolchain installer. The script *rustup.sh* installs executables  like *rustc* and *cargo* in *~/.cargo/bin* that it is needed to add */home/rustdev/.cargo/bin* to the PATH.
+Now its time to install [*rustup*](https://rust-lang.github.io/rustup/) the Rust toolchain installer. The script *rustup.sh* installs executables like *rustc* and *cargo* in *~/.cargo/bin* that is why it is needed to add */home/rustdev/.cargo/bin* to the PATH.
 
 ```dockerfile
 # Install rustup
@@ -128,7 +130,7 @@ RUN sh rustup.sh -y && rm -f rustup.sh
 ENV PATH /home/rustdev/.cargo/bin:$PATH
 ```
 
-There is a bit more to say about the installation of *code-server*. Installing it requires you to be *sudoer* because the install script installs a deb package. I use *standalone* method to install *code-server* because it puts it in the *~/.local* directory which allows rustdev* user to install extension without sudo. After installation is completed, The *~/.local* directory is owned by root user that is why I use the *chown* command change the ownership to be *rustdev*. To finish */home/rustdev/.local/bin* is added to the PATH as it contains the *code-server* executable. 
+There is a bit more to say about the installation of *code-server*. Installing it requires you to be *sudoer* because the install script installs a deb package. I use *standalone* method to install *code-server* because it puts it in the *~/.local* directory which allows *rustdev* user to install extension without sudo. After the installation is completed, The *~/.local* directory is owned by root user that is why I use the *chown* command change the ownership to be *rustdev*. To finish */home/rustdev/.local/bin* is added to the PATH as it contains the *code-server* executable. 
 
 ```dockerfile
 # Install code-server 
@@ -139,7 +141,7 @@ RUN sudo chown -R rustdev:rustdev /home/rustdev/.local
 ENV PATH /home/rustdev/.local/bin:$PATH
 ```
 
-Now that *code-server* is installed its time to add some extensions to make *code-server* user-friendly with Rust developers. I use *rustup* to install Rust toolchain components that are necessary for the extension I want. If you don't install these components now, this will be done each time you restart the container which is not the behavior I wanted.
+Now that *code-server* is installed its time to add some extensions to make *code-server* user-friendly with Rust developers. I use *rustup* to install Rust toolchain components that are necessary for the extensions I want. If you don't install these components now, this will be done each time you re-run the container which is not the behavior I wanted.
 
 ```dockerfile
 # Install code-server extensions
@@ -158,9 +160,9 @@ Rust extension is straightforward to install using *code-server* command line to
 RUN code-server --install-extension rust-lang.rust
 ```
 
-My first attempt to install *rust-analyzer* was to simply run *code-server --install-extension matklad.rust-analyzer*. The problem was it just installs the extension without downloading the *rust-analyzer* binary required by extension. As a consequence, the executable is downloaded each time the container is run, when you try to use the extension for the first time. To prevent this behavior the *rust-analyzer* executable can be downloaded directly from github and put it in the *code-server* global storage where the extension expect to find it. 
+My first attempt to install *rust-analyzer* was to simply run *code-server --install-extension matklad.rust-analyzer*. The problem was it just installs the extension without downloading the *rust-analyzer* binary required by the extension. As a consequence, the executable is downloaded each time the container is run, when you try to use the extension for the first time. To prevent this behavior the *rust-analyzer* executable can be downloaded directly from github and put in the *code-server* global storage where the  *rust-analyzer* extension expect to find it. 
 
-Unfortunately, even taking these precautions, when the container is run and the extension is activated by opening a first Rust project, the *rust-analyzer* extension ask for downloading the *rust-analyzer* binary. I have inspected the code of the *rust-analyzer* extension to understand the problem, if you are interested I created an [issue](https://github.com/rust-analyzer/rust-analyzer/issues/6428) in github.
+Unfortunately, even taking these precautions, when the container is run and the extension is activated by opening a first Rust project, the *rust-analyzer* extension ask for downloading the *rust-analyzer* binary. I have inspected the code of the *rust-analyzer* extension to understand the problem, if you are interested, I created an [issue](https://github.com/rust-analyzer/rust-analyzer/issues/6428) in github.
 
 A fix could be to modify the *package.json* of the extension by removing the version, but it is very dirty so I prefer keep the Dockerfile as these and wait the *rust-analyzer* team solves the problem as it is non blocking.
 
@@ -173,7 +175,7 @@ RUN curl -L https://github.com/rust-analyzer/rust-analyzer/releases/latest/downl
 RUN chmod u+x /home/rustdev/.local/share/code-server/User/globalStorage/matklad.rust-analyzer/rust-analyzer-linux
 ```
 
-For *vscode-lldb* extension I have also tried to install it the same way I have installed *rust* and *rust-analyzer* extensions but I encounter problems trying to use it. After some research I find the *vscode-lldb* [issue 314](https://github.com/vadimcn/vscode-lldb/issues/314) so I tried the fix proposed. The fix consists in downloading manually from github the *vsix* extension file and adding using the *code-server* command line, it works perfectly.
+For *vscode-lldb* extension I have also tried to install it the same way I have installed *rust* and *rust-analyzer* extensions but I encounter problems trying to use it. After some research I find the *vscode-lldb* [issue 314](https://github.com/vadimcn/vscode-lldb/issues/314) so I tried the fix proposed. The fix consists in downloading manually from github the *vsix* extension file and adding it using the *code-server* command line, it works perfectly.
 
 ```dockerfile
 ## Debugging tools
@@ -190,7 +192,7 @@ After that, I ended by installing the [better-toml](https://marketplace.visualst
 RUN code-server --install-extension bungcip.better-toml
 ```
 
-Now everything is installed it is time to remove the *sudo* package that is no more necessary. This can be done only as root user. Once *sudo* package is removed the user can be set again to rustdev to run code-server.
+Now everything is installed, it is time to remove the *sudo* package that is no more necessary. This can be done only as root user. Once *sudo* package is removed the user can be set again to rustdev to run code-server.
 
 ```dockerfile
 # Remove sudo package
@@ -200,20 +202,20 @@ RUN apt -y remove sudo
 USER rustdev
 ```
 
-To run *code-server* we need to overload the binding address and port to be able to access the web UI from the host. Because this container will be used locally, for testing purpose we can also by-pass authentication mechanism.
+To run *code-server* we need to overload the binding address and port to be able to access the web UI from the host. Because this container will be used locally, for testing purpose, we can also by-pass authentication mechanism.
 
 ```dockerfile
 # Command to run code-server
 CMD ["code-server", "--bind-addr=0.0.0.0:8080", "--auth=none"]	
 ```
 
-To test if everything is working correctly simply run:
+To test if everything is working correctly simply use *docker build* in the directory where the Dockerfile is saved.
 
 ```bash
 docker build -t rustcoder .
 ```
 
-in the directory where the Dockerfile is saved.
+
 
 ## Run the docker image
 
@@ -268,7 +270,7 @@ The image of the *rustcoder* service is built using the Dockerfile in the direct
     build: ./docker-image
 ```
 
-The port 8080 of the container will be binded to the port 8080 of host. 
+The port 8080 of the container is binded to the port 8080 of host. 
 
 ```yaml
     ports:
@@ -296,13 +298,11 @@ The host directory *./projects* is mounted into the container */home/rustdev/pro
       - ./projects:/home/rustdev/projects
 ```
 
-Now the *rustcoder* service can be run using 
+Now the *rustcoder* service can be run using *docker-compose* in the directory where the *docker-compose.yaml* file is saved.
 
 ```bash
 docker-compose up
 ```
-
-in the directory where the *docker-compose.yaml* file is saved.
 
 Once done, the Rust development environment is accessible from *http://localhost:8080*
 
@@ -330,9 +330,9 @@ Once done, open the */home/rustdev/projects/hello_world/main.rs* file. Now you c
 
 ## Debug your program with code-server
 
-To illustrate how debugging work we will modify a little bit the *main* function by creating a *greetings* variable and putting a breakpoint by clicking in the margin.![](imgs/breakpoint.png)
+To illustrate how debugging work we will modify a little bit the *main* function by creating a *greetings* variable and putting a breakpoint by clicking in the margin (the red bullet).![](imgs/breakpoint.png)
 
-To start the debugging session click on *Debug*, *code-server* automatically opens the debug panel and the execution is stopped to the breakpoint. You can now click on the step over icon that appears in overlay.
+To start the debugging session click on *Debug*, *code-server* automatically opens the debug panel and the execution is stopped to the breakpoint. You can now click on the step over icon (the blue rounded arrow with a point bellow) that appears in overlay.
 
 ![](imgs/step_over.png)
 
@@ -340,4 +340,4 @@ To start the debugging session click on *Debug*, *code-server* automatically ope
 
 We have now a complete Rust development environment and we are ready to start learning Rust :).
 
-The code developed to create the post is available on [github](https://github.com/DO4TECH/01-Learn-Rust) under CC0-1.0 License
+The code developed to create the post is available on [github](https://github.com/DO4TECH/01-Learn-Rust) under CC0-1.0 License.
