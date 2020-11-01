@@ -1,2 +1,2 @@
-remote_theme: poole/poole
+remote_theme: jekyll/minima
 markdown: kramdown
