@@ -5,6 +5,5 @@ description: Building a portable Rust development environment with code-server a
 # url: "https://do4tech.github.io/01-Learn-Rust/" 
 
 # Build settings
-remote_theme: huangyz0918/moving
-plugins:
-  - jekyll-feed
+remote_theme: yous/whiteglass
+
