@@ -4,6 +4,5 @@ email: sebastien.dorgan@gmail.com
 description: Building a portable Rust development environment with code-server and docker 
 # url: "https://do4tech.github.io/01-Learn-Rust/" 
 
-# Build settings
-remote_theme: yous/whiteglass
+#remote_theme: yous/whiteglass
 
