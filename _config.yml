@@ -1,2 +1,1 @@
-remote_theme: jekyll/minima
-markdown: kramdown
+remote_theme: mmistakes/so-simple-theme
