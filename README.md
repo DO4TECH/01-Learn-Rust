@@ -2,18 +2,18 @@
 
 I have been a professional developer for almost 20 years, and like many professional developers I have used many programming languages in my career (C, C++, Fortran, Java, Scala, JavaScript, TypeScript, Python, Go, etc.).
 
-It's been a while now that I've been wanting to learn Rust and write an article on Medium so I decide to do both at the same time.
+It's been a while now that **I wanted** to learn Rust and also to write a article on Medium so I decided to do both at the same time.
 
-Although it is not my mother tongue, I will write my articles in English. Maybe there will be some mistakes or some weird turns of phrase, please be kind to me but do not hesitate to correct me, I'm only asking for improvement :).
+Although it is not my mother tongue, I wrote this article in English. Maybe there will be some mistakes or some weird turns of phrase, please be kind to me but do not hesitate to correct me, I'm only asking for improvement :).
 
-In this first article I describe how to create a complete Rust development environment, usable from a browser and contained in a docker image. We will also write our first program and learn how to use the debugger.
+In this article, I describe how to create a complete Rust development environment, usable from a browser and contained in a docker image. We are also going to write our first program and learn how to use the debugger.
 
 For those who are very impatient, the link to the github repository is given in the conclusion.
 
 
 ## Create a portable development environment
 
-To begin we will create a Dockerfile containing all the necessary tools to program in rust. This is how this Dockerfile looks like:
+To begin we are going to create a Dockerfile containing all the necessary tools to program in Rust. This is how this Dockerfile looks like:
 ```dockerfile
 FROM ubuntu:20.04
 
@@ -81,15 +81,15 @@ USER rustdev
 CMD ["code-server", "--bind-addr=0.0.0.0:8080", "--auth=none"]     
 ```
 
-Although it's not extremely complex it took me longer than I expected to create this Dockerfile and I think it's interesting that we go through it together. 
+Although it's not extremely complex, it took me longer than I expected to create this Dockerfile and I think it's interesting that we go through it together. 
 
-The first part is very common I choose ubuntu:20.04 as base image because ubuntu is widely adopted by the docker community thus it is easy to find support and the version 20.04 because it is a LTS. The RUN directive installs some necessary system tools:
+The first part is very common. I chose ubuntu:20.04 as base image. Indeed ubuntu is widely adopted by the docker community thus it is easy to find support. And the version 20.04 because it is a long term support. The RUN directive installs some necessary system tools:
 
-- [Curl](https://curl.haxx.se/) to download some installation scripts and package
-- [Git](https://git-scm.com/) because it is used by [Cargo](https://doc.rust-lang.org/book/ch01-03-hello-cargo.html) the Rust build system and package manager
-- sudo because it is needed to install [code-server](https://github.com/cdr/code-server) a very nice [VS Code](https://github.com/Microsoft/vscode) clone with a web UI
-- [build-essential](https://packages.ubuntu.com/focal/build-essential) a meta package containing essential building tools
-- [LLDB](https://lldb.llvm.org/) the debugger of the [LLVM](https://llvm.org/) project
+- [Curl](https://curl.haxx.se/) to download some installation scripts and packages
+- [Git](https://git-scm.com/) because it is used by the Rust build system and package manager: [Cargo](https://doc.rust-lang.org/book/ch01-03-hello-cargo.html) 
+- sudo because it is needed to install [code-server](https://github.com/cdr/code-server), a very nice [VS Code](https://github.com/Microsoft/vscode) clone with a web UI
+- [build-essential](https://packages.ubuntu.com/focal/build-essential): a meta package containing essential building tools
+- [LLDB](https://lldb.llvm.org/): the debugger of the [LLVM](https://llvm.org/) project
 
 ```dockerfile
 FROM ubuntu:20.04
@@ -98,7 +98,7 @@ FROM ubuntu:20.04
 RUN apt update -y && apt upgrade -y && \
     apt install -y curl git sudo build-essential lldb
 ```
-As it is a bad practice to create root containers I create a user named *rustdev*. The default SHELL for this user is *bash*, the home directory is  */home/rustdev* , the password is disabled. To be able to install *code-server*, it is also needed to add *rustdev* to the sudoer list to allow rustdev to use *sudo* without password. To be perfectly honest, giving to a user the possibility to run sudo without password is also not a very good practice. This will be fix later by removing the package sudo. The SHELL environment variable is also set to make *bash* the default shell.
+As it is a bad practice to create root containers, Iet's create a user named *rustdev*. The default SHELL for this user is *bash*, the home directory is  */home/rustdev* , the password is disabled. To be able to install *code-server*, it is also needed to add *rustdev* to the sudoer list to allow rustdev to use *sudo* without password. To be perfectly honest, giving to a user the possibility to run sudo without password is also not a very good practice. This will be fixed later by removing the package sudo. The SHELL environment variable is also set to make *bash* the default shell.
 
 ```dockerfile
 # Add a user `rustdev` so that you're not developing as the `root` user
@@ -108,7 +108,7 @@ RUN adduser --gecos '/usr/bin/bash' --disabled-password rustdev && \
 ENV SHELL bash
 ```
 
-The next section set the user to be *rustdev*, the working directory to be */home/rustdev*, the home directory of *rustdev* user. The USER environment variable is defined to be able to use Cargo later. If  the USER environment variable is not define, when running *cargo new ...* command in the container, an error is raised: *"could not determine the current user, please set $USER"*
+The next section sets the user to be *rustdev* and the working directory to be */home/rustdev*, the home directory of *rustdev* user. The USER environment variable is defined to be able to use Cargo later. If the USER environment variable is not defined when running *cargo new ...* command in the container, an error is raised: *"could not determine the current user, please set $USER"*
 
 ```dockerfile
 USER rustdev
@@ -117,7 +117,7 @@ WORKDIR /home/rustdev
 ENV USER rustdev
 ```
 
-Now its time to install [*rustup*](https://rust-lang.github.io/rustup/) the Rust toolchain installer. The script *rustup.sh* installs executables like *rustc* and *cargo* in *~/.cargo/bin* that is why it is needed to add */home/rustdev/.cargo/bin* to the PATH.
+Now its time to install [*rustup*](https://rust-lang.github.io/rustup/), the Rust toolchain installer. The *rustup.sh* script installs executables like *rustc* and *cargo* in *~/.cargo/bin*, that is why it is needed to add */home/rustdev/.cargo/bin* to the PATH.
 
 ```dockerfile
 # Install rustup
@@ -126,7 +126,7 @@ RUN sh rustup.sh -y && rm -f rustup.sh
 ENV PATH /home/rustdev/.cargo/bin:$PATH
 ```
 
-There is a bit more to say about the installation of *code-server*. Installing it requires you to be *sudoer* because the install script installs a deb package. I use *standalone* method to install *code-server* because it puts it in the *~/.local* directory which allows *rustdev* user to install extension without sudo. After the installation is completed, The *~/.local* directory is owned by root user that is why I use the *chown* command change the ownership to be *rustdev*. To finish */home/rustdev/.local/bin* is added to the PATH as it contains the *code-server* executable. 
+There is a bit more to say about the installation of *code-server*. Installing it requires you to be *sudoer* because the install script installs a deb package. I used *standalone* method to install *code-server* because it puts it in the *~/.local* directory which allows *rustdev* user to install extension without sudo. Once the installation is completed, the *~/.local* directory is owned by root user. I used the *chown* command to change the ownership to be *rustdev*. Finally */home/rustdev/.local/bin* is added to the PATH as it contains the *code-server* executable. 
 
 ```dockerfile
 # Install code-server 
