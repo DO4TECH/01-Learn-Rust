@@ -1,0 +1,12 @@
+version: "3.8"
+services:
+  rustcoder:
+    build: ./docker-image
+    ports:
+    - 8080:8080
+    cap_add:
+      - SYS_PTRACE
+    security_opt:
+      - seccomp:unconfined
+    volumes:
+      - ./projects:/home/rustdev/projects
