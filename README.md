@@ -2,7 +2,7 @@
 
 I have been a professional developer for almost 20 years, and like many professional developers I have used many programming languages in my career (C, C++, Fortran, Java, Scala, JavaScript, TypeScript, Python, Go, etc.).
 
-It's been a while now that **I wanted** to learn Rust and also to write a article on Medium so I decided to do both at the same time.
+It's been a while now that I wanted to learn Rust and also to write a article on Medium so I decided to do both at the same time.
 
 Although it is not my mother tongue, I wrote this article in English. Maybe there will be some mistakes or some weird turns of phrase, please be kind to me but do not hesitate to correct me, I'm only asking for improvement :).
 
@@ -137,7 +137,7 @@ RUN sudo chown -R rustdev:rustdev /home/rustdev/.local
 ENV PATH /home/rustdev/.local/bin:$PATH
 ```
 
-Now that *code-server* is installed its time to add some extensions to make *code-server* user-friendly with Rust developers. I use *rustup* to install Rust toolchain components that are necessary for the extensions I want. If you don't install these components now, this will be done each time you re-run the container which is not the behavior I wanted.
+Now that *code-server* is installed, it's time to add some extensions to make *code-server* user-friendly with Rust developers. I used *rustup* to install Rust toolchain components that are necessary for the extensions I needed. If you don't install these components now, this will be done each time you re-run the container which is not the behavior I expected.
 
 ```dockerfile
 # Install code-server extensions
@@ -147,7 +147,7 @@ RUN rustup component add rust-src --toolchain stable-x86_64-unknown-linux-gnu
 RUN rustup component add rls --toolchain stable-x86_64-unknown-linux-gnu
 ```
 
-After reading a [post](https://dev.to/thiagomg/developing-in-rust-using-visual-studio-code-4kkl) by Thiago Massari Guedes I decided to trust him and to add [rust](https://marketplace.visualstudio.com/items?itemName=rust-lang.rust), [rust-analyzer](https://marketplace.visualstudio.com/items?itemName=matklad.rust-analyzer) and [vscode-lldb](https://marketplace.visualstudio.com/items?itemName=vadimcn.vscode-lldb) extensions even if *rust-analyzer* is in alpha version and that the documentation of *rust-analyzer* says that it may cause conflicts with the [official Rust plugin](https://marketplace.visualstudio.com/items?itemName=rust-lang.rust). We will see in use if Thiago's recommendations were good, I will make a feedback in the next posts as I progress in the discovery of Rust.
+After reading a [post](https://dev.to/thiagomg/developing-in-rust-using-visual-studio-code-4kkl) by Thiago Massari Guedes, I decided to trust him and to add [rust](https://marketplace.visualstudio.com/items?itemName=rust-lang.rust), [rust-analyzer](https://marketplace.visualstudio.com/items?itemName=matklad.rust-analyzer) and [vscode-lldb](https://marketplace.visualstudio.com/items?itemName=vadimcn.vscode-lldb) extensions even if *rust-analyzer* is in alpha version and that the documentation of *rust-analyzer* says that it may cause conflicts with the [official Rust plugin](https://marketplace.visualstudio.com/items?itemName=rust-lang.rust). We will see in use if Thiago's recommendations were good, I will make a feedback in the next posts as I progress in the discovery of Rust.
 
 Rust extension is straightforward to install using *code-server* command line tool, *rust-analyzer* and *vscode-lldb* were more problematic.
 
@@ -156,11 +156,11 @@ Rust extension is straightforward to install using *code-server* command line to
 RUN code-server --install-extension rust-lang.rust
 ```
 
-My first attempt to install *rust-analyzer* was to simply run *code-server --install-extension matklad.rust-analyzer*. The problem was it just installs the extension without downloading the *rust-analyzer* binary required by the extension. As a consequence, the executable is downloaded each time the container is run, when you try to use the extension for the first time. To prevent this behavior the *rust-analyzer* executable can be downloaded directly from github and put in the *code-server* global storage where the  *rust-analyzer* extension expect to find it. 
+My first attempt to install *rust-analyzer* was to simply run *code-server --install-extension matklad.rust-analyzer*. The problem is it just installs the extension without downloading the *rust-analyzer* binary required by the extension. As a consequence, the executable is downloaded each time the container is run, when you try to use the extension for the first time. To prevent this behavior, the *rust-analyzer* executable can be downloaded directly from github and put in the *code-server* global storage where the  *rust-analyzer* extension expects to find it. 
 
-Unfortunately, even taking these precautions, when the container is run and the extension is activated by opening a first Rust project, the *rust-analyzer* extension ask for downloading the *rust-analyzer* binary. I have inspected the code of the *rust-analyzer* extension to understand the problem, if you are interested, I created an [issue](https://github.com/rust-analyzer/rust-analyzer/issues/6428) in github.
+Unfortunately, even taking these precautions, when the container is run and the extension is activated by opening a first Rust project, the *rust-analyzer* extension asks for downloading the *rust-analyzer* binary. I have inspected the code of the *rust-analyzer* extension to understand the problem. If you are interested, I described this [issue](https://github.com/rust-analyzer/rust-analyzer/issues/6428) in github.
 
-A fix could be to modify the *package.json* of the extension by removing the version, but it is very dirty so I prefer keep the Dockerfile as these and wait the *rust-analyzer* team solves the problem as it is non blocking.
+A solution could be to modify the *package.json* of the extension by removing the version, but it is very dirty so I chose to keep the Dockerfile as is and wait the *rust-analyzer* team solves the problem as it is non blocking.
 
 ```dockerfile
 ## Alternative Rust Language Server
@@ -171,7 +171,7 @@ RUN curl -L https://github.com/rust-analyzer/rust-analyzer/releases/latest/downl
 RUN chmod u+x /home/rustdev/.local/share/code-server/User/globalStorage/matklad.rust-analyzer/rust-analyzer-linux
 ```
 
-For *vscode-lldb* extension I have also tried to install it the same way I have installed *rust* and *rust-analyzer* extensions but I encounter problems trying to use it. After some research I find the *vscode-lldb* [issue 314](https://github.com/vadimcn/vscode-lldb/issues/314) so I tried the fix proposed. The fix consists in downloading manually from github the *vsix* extension file and adding it using the *code-server* command line, it works perfectly.
+For *vscode-lldb* extension, I also tried to install it the same way I had installed *rust* and *rust-analyzer* extensions but I encountered problems trying to use it. After some research, I found the *vscode-lldb* [issue 314](https://github.com/vadimcn/vscode-lldb/issues/314) so I tried the proposed fix which consists in downloading manually from github the *vsix* extension file and adding it using the *code-server* command line. It works perfectly.
 
 ```dockerfile
 ## Debugging tools
@@ -188,7 +188,7 @@ After that, I ended by installing the [better-toml](https://marketplace.visualst
 RUN code-server --install-extension bungcip.better-toml
 ```
 
-Now everything is installed, it is time to remove the *sudo* package that is no more necessary. This can be done only as root user. Once *sudo* package is removed the user can be set again to rustdev to run code-server.
+Now everything is installed, it is time to remove the *sudo* package that is no more necessary. This can be done only as root user. Once *sudo* package is removed, the user can be set again to rustdev to run code-server.
 
 ```dockerfile
 # Remove sudo package
@@ -198,14 +198,14 @@ RUN apt -y remove sudo
 USER rustdev
 ```
 
-To run *code-server* we need to overload the binding address and port to be able to access the web UI from the host. Because this container will be used locally, for testing purpose, we can also by-pass authentication mechanism.
+To run *code-server*, we need to overload the binding address and port to be able to access the web UI from the host. Because this container will be used locally, for testing purpose, we can also by-pass authentication mechanisms.
 
 ```dockerfile
 # Command to run code-server
 CMD ["code-server", "--bind-addr=0.0.0.0:8080", "--auth=none"]	
 ```
 
-To test if everything is working correctly simply use *docker build* in the directory where the Dockerfile is saved.
+To test if everything is working correctly, simply use *docker build* in the directory where the Dockerfile is saved.
 
 ```bash
 docker build -t rustcoder .
@@ -224,13 +224,13 @@ This is how my working repository is organized:
 ├── projects
 ```
 
-- The file *docker-compose.yaml* is a docker compose file that defines how to build and run the image. 
+- The file *docker-compose.yaml* is a docker-compose file that defines how to build and run the image. 
 - The directory *docker-image* contains the Dockerfile.
-- The directory projects is an empty repository.
+- The directory *projects* is an empty repository.
 
-I also need to precise that I use docker version 19.03.8 and docker-compose version 1.27.4.
+Note that I use docker version 19.03.8 and docker-compose version 1.27.4, depending on the versions you use, some adjustments could be required.
 
-Knowing that this is how my *docker-compose.yaml* looks like:
+Knowing that, this is how my *docker-compose.yaml* looks like:
 
 ```yml
 version: "3.8"
@@ -247,7 +247,7 @@ services:
       - ./projects:/home/rustdev/projects
 ```
 
-The file format version is 3.8 which is a version compatible with my version of *docker* and *docker-compose*. 
+The file format version is 3.8, which is a version compatible with my version of *docker* and *docker-compose*. 
 
 ```yaml
 version: "3.8"
@@ -280,7 +280,7 @@ The capability *SYS_PTRACE* is added because LLDB uses *ptrace* system calls.
       - SYS_PTRACE
  ```
 
-To allow LLDB working correctly inside the container the *seccomp* security profile is set to *unconfined* which means that the container will be run without the default seccomp profile.
+To allow LLDB working correctly inside the container, the *seccomp* security profile is set to *unconfined* which means that the container will be run without the default seccomp profile.
 
 ```yaml
     security_opt:
@@ -300,17 +300,17 @@ Now the *rustcoder* service can be run using *docker-compose* in the directory w
 docker-compose up
 ```
 
-Once done, the Rust development environment is accessible from *http://localhost:8080*
+Once done, the Rust development environment is accessible from *http://localhost:8080*.
 
 ![](imgs/code-server.png)
 
 ## Create a project with Cargo
 
-To create a project with Cargo we need first to open a Terminal inside *code-server*
+To create a project with Cargo, we need first to open a Terminal inside *code-server*.
 
 ![](imgs/open-terminal.png)
 
-Once the Terminal is opened go to *projects* directory and run
+Once the Terminal is opened, go to *projects* directory and run the following command:
 
 ```bash
 cargo new hello_world
@@ -318,7 +318,7 @@ cargo new hello_world
 
 Than click on *Open Folder* in the welcome screen or from the menu click *File > Open Folder* and then select */home/rustdev/projects/hello_world*. 
 
-Due to the "bug" explained before the *rust-analyzer* extension should ask you for downloading the *rust-analyzer* binary.
+Due to the "bug" explained before, the *rust-analyzer* extension should ask you for downloading the *rust-analyzer* binary.
 
 Once done, open the */home/rustdev/projects/hello_world/main.rs* file. Now you can run your first Rust program by simply clicking *Run* above the *main* function definition.
 
@@ -326,9 +326,9 @@ Once done, open the */home/rustdev/projects/hello_world/main.rs* file. Now you c
 
 ## Debug your program with code-server
 
-To illustrate how debugging work we will modify a little bit the *main* function by creating a *greetings* variable and putting a breakpoint by clicking in the margin (the red bullet).![](imgs/breakpoint.png)
+To illustrate how debugging works, let's modify a little bit the *main* function by creating a *greetings* variable and putting a breakpoint by clicking in the margin (the red bullet).![](imgs/breakpoint.png)
 
-To start the debugging session click on *Debug*, *code-server* automatically opens the debug panel and the execution is stopped to the breakpoint. You can now click on the step over icon (the blue rounded arrow with a point bellow) that appears in overlay.
+To start the debugging session, click on *Debug*: *code-server* automatically opens the debug panel and the execution is stopped to the breakpoint. You can now click on the step over icon (the blue rounded arrow with a point below) that appears in overlay.
 
 ![](imgs/step_over.png)
 
